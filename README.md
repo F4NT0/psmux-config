@@ -62,6 +62,111 @@ Esta configuração inclui:
 - **Keybindings personalizados**: `Ctrl+a + h` (split horizontal), `Ctrl+a + v` (split vertical)
 - **Renumeramento automático**: Janelas são renumeradas quando uma é fechada
 - **Histórico**: 5000 linhas
+- **Plugins**: PPM (gerenciador de plugins) + psmux-resurrect (salvar/restaurar sessões)
+
+## Plugins
+
+O psmux suporta plugins gerenciados pelo **PPM** (Psmux Plugin Manager), inspirado no `tpm` do tmux.
+
+### PPM — Psmux Plugin Manager
+
+Repositório: [psmux-plugins/ppm](https://github.com/psmux/psmux-plugins/tree/main/ppm)
+
+O PPM é o gerenciador oficial de plugins do psmux. Ele lê as declarações `@plugin` do `psmux.conf`, clona os repositórios em `~/.psmux/plugins/` e carrega cada plugin na inicialização.
+
+#### Instalação do PPM
+
+```powershell
+git clone https://github.com/psmux/psmux-plugins.git "$env:TEMP\psmux-plugins"
+Copy-Item "$env:TEMP\psmux-plugins\ppm" "$env:USERPROFILE\.psmux\plugins\ppm" -Recurse
+Remove-Item "$env:TEMP\psmux-plugins" -Recurse -Force
+```
+
+#### Atalhos do PPM
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+a + I` | Instalar plugins declarados |
+| `Ctrl+a + U` | Atualizar todos os plugins |
+| `Ctrl+a + M` | Remover plugins não utilizados |
+
+#### Formato de plugin no psmux.conf
+
+```conf
+set -g @plugin 'psmux-plugins/psmux-sensible'      # GitHub: psmux-plugins/psmux-sensible
+set -g @plugin 'someone/their-plugin'               # GitHub: someone/their-plugin
+set -g @plugin 'https://gitlab.com/user/plugin.git' # Qualquer URL git
+```
+
+---
+
+### psmux-resurrect
+
+Repositório: [psmux-plugins/psmux-resurrect](https://github.com/psmux/psmux-plugins/tree/main/psmux-resurrect)
+
+Port do [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) para o psmux. Salva e restaura sessões completas entre reinicializações do sistema.
+
+#### O que é salvo
+
+- Todas as sessões e seus nomes
+- Todas as janelas e seus nomes
+- Layout exato dos painéis (splits horizontais e verticais com tamanhos)
+- Diretório de trabalho de cada painel
+- Janela ativa por sessão e painel ativo por janela
+- Estado de zoom do painel e títulos de painéis
+- Comandos de processos em execução (para restauração de processos)
+
+#### Atalhos do psmux-resurrect
+
+| Atalho | Ação |
+|--------|------|
+| `Ctrl+a + Ctrl+s` | Salvar sessão |
+| `Ctrl+a + Ctrl+r` | Restaurar sessão |
+
+#### Opções disponíveis no psmux.conf
+
+```conf
+# Diretório de salvamento personalizado (padrão: ~/.psmux/resurrect)
+set -g @resurrect-dir '~/.psmux/resurrect'
+
+# Salvar conteúdo dos painéis
+set -g @resurrect-capture-pane-contents 'on'
+
+# Processos adicionais para restaurar (separados por espaço)
+# Padrão: python python3 node npm ssh wsl htop vim nvim less more tail
+set -g @resurrect-processes 'ssh python node'
+
+# Desativar restauração de processos
+set -g @resurrect-processes 'false'
+
+# Restaurar TODOS os processos (usar com cautela)
+set -g @resurrect-processes ':all:'
+```
+
+#### Indicador de progresso na barra de status
+
+Adicione `#{@resurrect-status}` ao `status-right` para exibir o progresso da restauração:
+
+```conf
+set -g status-right '#{@resurrect-status} | %H:%M %d-%b-%y'
+```
+
+Durante a restauração, a barra mostra:
+```
+psmux-resurrect: restoring [######--------] 3/7  devbox
+```
+
+---
+
+### Instalação manual dos plugins (sem PPM)
+
+Para instalar o psmux-resurrect diretamente sem usar o PPM:
+
+```powershell
+git clone https://github.com/psmux/psmux-plugins.git "$env:TEMP\psmux-plugins"
+Copy-Item "$env:TEMP\psmux-plugins\psmux-resurrect" "$env:USERPROFILE\.psmux\plugins\psmux-resurrect" -Recurse
+Remove-Item "$env:TEMP\psmux-plugins" -Recurse -Force
+```
 
 ## Comandos Básicos
 
